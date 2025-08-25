@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "RSTemulator"
+version = "0.1.0"  # Hier die Version hinzufügen
+description = "A tool to emulate code snippets for ASM lab"
+authors = [{name = "Felix Schmidt", email = "Feli.Schmidt@ostfalia.de"}]
+license-files = ["LICEN[CS]E*"]
+dynamic = ["optional-dependencies", "classifiers",
+            "dependencies", "requires-python",
+            "readme", "urls"]
+
+# Weitere optionale Konfigurationen
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+exclude = ["tests*"]
