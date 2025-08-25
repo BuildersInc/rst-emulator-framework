@@ -8,7 +8,7 @@ def get_parser():
     :return: New argument parser
     """
     new_parser = \
-        argparse.ArgumentParser(description='<ScriptDescription>',
+        argparse.ArgumentParser(description='RST Test and Emulation Environment',
                                 formatter_class=argparse.RawTextHelpFormatter)
 
     debugging_utils = new_parser.add_argument_group('Debugging Utils',
@@ -22,6 +22,9 @@ def get_parser():
                                  required=False, action="store_true",
                                  help="Do not log into a \"LastRun.log\" file")
 
+    new_parser.add_argument("--asm-file", "-asm", required=True,
+
+                            help="Provide input file")
     return new_parser
 
 
