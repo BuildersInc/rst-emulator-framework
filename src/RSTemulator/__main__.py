@@ -1,6 +1,9 @@
 import logging
 import argparse
 
+from fileloader import asm
+from emulator import asm_emulator
+
 
 def get_parser():
     """
@@ -22,7 +25,7 @@ def get_parser():
                                  required=False, action="store_true",
                                  help="Do not log into a \"LastRun.log\" file")
 
-    new_parser.add_argument("--asm-file", "-asm", required=True,
+    new_parser.add_argument("--asm-file", "-asm", required=True, dest="input_file",
 
                             help="Provide input file")
     return new_parser
@@ -54,7 +57,10 @@ def setup_logger(args) -> None:
 
 
 def main(args):
-    ...
+    asm_file = asm.load_file(args.input_file)
+    asm_file.compile_file()
+    emulator = asm_emulator.ASMEmulator(asm_file)
+    emulator.emulate()
 
 
 if __name__ == "__main__":

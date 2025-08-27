@@ -1,5 +1,5 @@
-.section .data
-.syntax unified
+// .section .data
+// .syntax unified
 
 .equ RCGC_GPIO_R, 0x400FE608
 .equ RCGC_GPIO_PORT_A, 0x01
@@ -32,9 +32,9 @@
 .equ Timer, 0xF4240
 .equ Leftbit, 0x80000000
 
-.section .text
-.global main
-.align
+// .section .text
+// .global main
+// .align
 
 main:
     // avtivate clock on portF
@@ -55,7 +55,6 @@ main:
     LDR R1,[R0]
     ORR R1,R1, #PIN2
     STR R1,[R0]
-
     // enable digital input for sw1
     LDR R0, =GPIO_PORT_D_DEN_R
     LDR R1,[R0]
@@ -84,8 +83,6 @@ main:
     // set initiate r7 = 0x1
     MOV R7, #0x1
     B Checkbutton
-
-
 init_hardware:
 LEDWHITE:
     // turn white-led on
@@ -94,7 +91,6 @@ LEDWHITE:
     ORR R1, R1, #white
     STR R1, [R0]
     BX LR
-
 Checkbutton:
     // check button sw1 pressed or not
     LDR R0, =GPIO_PORT_F_DATA_R
@@ -104,20 +100,17 @@ Checkbutton:
     CMP R1,R2
     BEQ handle_btn_pressed
     B handle_btn_not_pressed
-
 LEDBLUE:
 // turn led-white off, then turn led-blue on
     LDR R0, =GPIO_PORT_F_DATA_R
     LDR R1, [R0]
     BIC R1, R1, #white
     STR R1, [R0]
-
     LDR R0, =GPIO_PORT_F_DATA_R
     LDR R1, [R0]
     ORR R1, R1, #PIN2
     STR R1, [R0]
     BX LR
-
 handle_btn_not_pressed:
     MOV R0, #0x0
     LDR R1, =Timer
@@ -128,7 +121,6 @@ handle_btn_not_pressed:
     CMP R1, R7
     BEQ ResetRight
     B Checkbutton
-
 handle_btn_pressed:
     MOV R0, #0x0
     LDR R1, =Timer
@@ -139,7 +131,6 @@ handle_btn_pressed:
     CMP R1,R7
     BEQ ResetLeft
     B Checkbutton
-
 endless_loop:
 // timer
     MOV R2, #0x1
@@ -147,11 +138,9 @@ endless_loop:
     CMP R0, R1
     BNE endless_loop
     BX LR
-
 ResetRight:
     MOV R7, #0x1
     B Checkbutton
-
 ResetLeft:
     LDR R7, =Leftbit
     B Checkbutton
