@@ -44,7 +44,6 @@ def setup_logger(args) -> None:
         1 if args.verbosity else logging.INFO
     # logging.basicConfig(format=LOG_FORMAT, datefmt="%H:%M:%S", level=level)
     formatter = logging.Formatter(log_format, datefmt="%H:%M:%S")
-
     if not args.no_logfile:
         file_handler = logging.FileHandler('last_run.log', mode="w")
         file_handler.setFormatter(formatter)
@@ -60,7 +59,7 @@ def main(args):
     asm_file = asm.load_file(args.input_file)
     asm_file.compile_file()
     emulator = asm_emulator.ASMEmulator(asm_file)
-    emulator.emulate()
+    emulator.emulate(verbose=logging.getLogger().level == logging.DEBUG)
 
 
 if __name__ == "__main__":

@@ -15,7 +15,7 @@ class ASMFile:
         self._compiled = False
 
     def compile_file(self):
-        ks_obj = Ks(KS_ARCH_ARM, KS_MODE_ARM)
+        ks_obj = Ks(KS_ARCH_ARM, KS_MODE_THUMB)
         arm_arr_int_bytes, number_of_instructions = ks_obj.asm(self.file_content)
         self.byte_code = bytes(arm_arr_int_bytes)
 
