@@ -15,9 +15,9 @@
 
 main:
     // avtivate clock on portF
-    LDR R0, =0x2000000
+    LDR R0, =0x4000000
     LDR R1, [R0]
-    // ORR R1, 5
+    ORR R1, 5
     LDR R1, 5
     STR R1, [R0]
 

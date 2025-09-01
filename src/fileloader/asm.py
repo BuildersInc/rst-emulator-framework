@@ -27,7 +27,7 @@ class ASMFile:
     @property
     def byte_code(self):
         """
-        Returns the compiled bytecode
+        The compiled bytecode
 
         Raises:
             RuntimeError: Raises when accessed before compilation
@@ -41,6 +41,9 @@ class ASMFile:
     def byte_code(self, value):
         self._compiled = True
         self._byte_code = value
+
+    def __len__(self):
+        return len(self.byte_code)
 
 
 def load_file(path_to_file: str, config: RSTEmulationConfig = None) -> ASMFile:

@@ -1,4 +1,4 @@
-        .equ RCGC_GPIO_R, 0x2000000
+        .equ RCGC_GPIO_R, 0x4000000
         .equ RCGC_GPIO_PORT_A, 0x01
 
         .thumb
