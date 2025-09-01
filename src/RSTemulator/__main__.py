@@ -3,6 +3,7 @@ import argparse
 
 from fileloader import asm
 from emulator import asm_emulator
+from config.emulation_config import default_config
 
 
 def get_parser():
@@ -56,9 +57,10 @@ def setup_logger(args) -> None:
 
 
 def main(args):
-    asm_file = asm.load_file(args.input_file)
+    config = default_config()
+    asm_file = asm.load_file(args.input_file, config)
     asm_file.compile_file()
-    emulator = asm_emulator.ASMEmulator(asm_file)
+    emulator = asm_emulator.ASMEmulator(asm_file, config)
     emulator.emulate(verbose=logging.getLogger().level == logging.DEBUG)
 
 

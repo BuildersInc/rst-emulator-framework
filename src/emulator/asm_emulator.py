@@ -1,11 +1,8 @@
-from unicorn import Uc, UC_ARCH_ARM, UC_MODE_THUMB, UC_MODE_ARM,  UC_HOOK_CODE
+from unicorn import Uc, UC_ARCH_ARM, UC_MODE_THUMB, \
+                    UC_MODE_ARM,  UC_HOOK_CODE
 import unicorn as uc
-import capstone as cs
 
 from fileloader.asm import ASMFile
-
-MD = cs.Cs(cs.CS_ARCH_ARM, cs.CS_MODE_THUMB)
-MD.detail = True
 
 
 def hook_code(unicorn, addr, size, user_data):
@@ -13,7 +10,6 @@ def hook_code(unicorn, addr, size, user_data):
     for insn in MD.disasm(mem, addr):
         print(f"{hex(insn.address)}\t{insn.mnemonic}\t{insn.op_str}")
     return True
-
 
 class ASMEmulator:
     def __init__(self, asm_file: ASMFile):
@@ -24,8 +20,8 @@ class ASMEmulator:
     def emulate(self, verbose: bool = True):
         self.uc_em = Uc(UC_ARCH_ARM, UC_MODE_THUMB)
         self._map_memory(self.initial_address, 1024, uc.UC_PROT_ALL, self.asm_file.byte_code)
-        base = 0x2000000 & ~0xFFF
-        self._map_memory(base, 0x1000, uc.UC_PROT_ALL, bytes([0x00] * 0x1000))
+        # base = 0x2000000 & ~0xFFF
+        # self._map_memory(0x2000000, 1024, uc.UC_PROT_ALL, bytes([0x00] * 1024))
         # self._map_memory(0x2000000, 1024, uc.UC_PROT_ALL, bytes([0x00] * 1024))
         self._ensure_thumb_mode()
 
@@ -38,7 +34,7 @@ class ASMEmulator:
         print("Emulation Process Completed")
         print(f"RO {self.uc_em.reg_read(uc.arm_const.UC_ARM_REG_R0)}")
         print(f"R1 {self.uc_em.reg_read(uc.arm_const.UC_ARM_REG_R1)}")
-        print(f"RCGC {self.uc_em.mem_read(0x2000000, 4).hex()}")
+        # print(f"RCGC {self.uc_em.mem_read(0x2000000, 4).hex()}")
 
     def _ensure_thumb_mode(self) -> bool:
         """

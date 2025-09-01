@@ -5,18 +5,20 @@ from unicorn import Uc, UC_ARCH_ARM, UC_MODE_ARM, UcError
 from unicorn.arm_const import UC_ARM_REG_R0, UC_ARM_REG_R1, UC_ARM_REG_R2
 from keystone import Ks, KS_ARCH_ARM, KS_MODE_THUMB, KS_MODE_ARM,  KsError
 
+from config.emulation_config import RSTEmulationConfig, default_config
 
 class ASMFile:
-    def __init__(self, path_to_file: Path):
+    def __init__(self, path_to_file: Path, config: RSTEmulationConfig):
         logging.debug("Load file with path %s", path_to_file)
         self.path = path_to_file
+        self.config = config
         self.file_content = self.path.read_text(encoding="utf-8").strip()
         self._byte_code = None
         self._compiled = False
 
     def compile_file(self):
-        ks_obj = Ks(KS_ARCH_ARM, KS_MODE_THUMB)
-        arm_arr_int_bytes, number_of_instructions = ks_obj.asm(self.file_content)
+        ks_obj = Ks(self.config.KEYSTONE_ARCH, self.config.KEYSTONE_MODE)
+        arm_arr_int_bytes, _ = ks_obj.asm(self.file_content)
         self.byte_code = bytes(arm_arr_int_bytes)
 
         out = self.path.parent / "compiled.obj"
@@ -24,6 +26,13 @@ class ASMFile:
 
     @property
     def byte_code(self):
+        """
+        Returns the compiled bytecode
+
+        Raises:
+            RuntimeError: Raises when accessed before compilation
+
+        """
         if not self._compiled:
             raise RuntimeError("ASM File is not compiled yet")
         return self._byte_code
@@ -34,7 +43,7 @@ class ASMFile:
         self._byte_code = value
 
 
-def load_file(path_to_file: str) -> ASMFile:
+def load_file(path_to_file: str, config: RSTEmulationConfig = None) -> ASMFile:
     """
     Loads a ASM file
 
@@ -53,5 +62,9 @@ def load_file(path_to_file: str) -> ASMFile:
         logging.critical("File %s not Found", path)
         return FileNotFoundError(path.as_posix())
 
-    asm_file = ASMFile(path)
+    if config is None:
+        logging.info("keystone uses default config")
+        config = default_config()
+
+    asm_file = ASMFile(path, config)
     return asm_file
