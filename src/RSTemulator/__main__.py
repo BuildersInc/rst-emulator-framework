@@ -1,6 +1,9 @@
 import logging
 import argparse
 
+from unicorn import UcError
+from keystone import KsError
+
 from fileloader import asm
 from emulator import asm_emulator
 from config.emulation_config import default_config
@@ -58,10 +61,17 @@ def setup_logger(args) -> None:
 
 def main(args):
     config = default_config()
-    asm_file = asm.load_file(args.input_file, config)
-    asm_file.compile_file()
-    emulator = asm_emulator.ASMEmulator(asm_file, config)
-    emulator.emulate(verbose=logging.getLogger().level == logging.DEBUG)
+    try:
+        asm_file = asm.load_file(args.input_file, config)
+        asm_file.compile_file()
+        emulator = asm_emulator.ASMEmulator(asm_file, config)
+        emulator.init()
+        emulator.start_emulation()
+
+    except KsError as error_msg:
+        logging.critical("Assembling failed %s", error_msg)
+    except UcError as error_msg:
+        logging.critical("Emulation failed %s", error_msg)
 
 
 if __name__ == "__main__":

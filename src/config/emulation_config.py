@@ -16,6 +16,9 @@ class RSTEmulationConfig:
     CAPSTONE_ARCH: int
     CAPSTONE_MODE: int
 
+    STACK_BASE: int
+    STACK_SIZE: int
+
 
 def default_config() -> RSTEmulationConfig:
     """
@@ -30,5 +33,7 @@ def default_config() -> RSTEmulationConfig:
         KS_ARCH_ARM,
         KS_MODE_THUMB,
         CS_ARCH_ARM,
-        CS_MODE_THUMB
+        CS_MODE_THUMB,
+        STACK_BASE=0x2000000,
+        STACK_SIZE=1024
     )
