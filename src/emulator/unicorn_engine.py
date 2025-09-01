@@ -32,8 +32,8 @@ class UnicornEngine():
 
         self.emu_engine.reg_write(uc.arm_const.UC_ARM_REG_SP,
                                   self.config.STACK_BASE + (self.config.STACK_SIZE // 2))
-        self.map_memory(0x4000000, 1024,
-                        uc.UC_PROT_ALL, b"\x00" * 1024)
+        self.map_memory(0x4000000, 0x1000000,
+                        uc.UC_PROT_ALL, b"\x00" * 0x1000000)
 
     def init_decomp_engine(self):
         self.decomp_engine = cs.Cs(self.config.CAPSTONE_ARCH,

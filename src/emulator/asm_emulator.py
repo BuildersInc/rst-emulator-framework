@@ -24,7 +24,7 @@ class ASMEmulator(UnicornEngine):
         self.emu_engine.emu_start(self.initial_address | 1,
                                   self.initial_address + len(self.asm_file))
         print(self.emu_engine.reg_read(uc.arm_const.UC_ARM_REG_R0))
-        print(self.emu_engine.mem_read(0x4000000, 4))
+        print(self.emu_engine.mem_read(0x4000000, 4).hex())
 
     def _ensure_thumb_mode(self) -> bool:
         """
