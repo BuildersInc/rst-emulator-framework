@@ -16,7 +16,7 @@ class ASMEmulator(UnicornEngine):
     def prepare_emulation(self):
         self._ensure_thumb_mode()
         self.emulation_add_hooks()
-        self.map_memory(self.initial_address, 1024,
+        self.map_memory(self.initial_address, 1024*4,
                         UC_PROT_ALL, self.asm_file.byte_code)
 
     def start_emulation(self):

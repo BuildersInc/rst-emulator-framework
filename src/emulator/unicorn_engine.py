@@ -32,8 +32,8 @@ class UnicornEngine():
 
         self.emu_engine.reg_write(uc.arm_const.UC_ARM_REG_SP,
                                   self.config.STACK_BASE + (self.config.STACK_SIZE // 2))
-        self.map_memory(0x4000000, 0x1000000,
-                        uc.UC_PROT_ALL, b"\x00" * 0x1000000)
+        self.map_memory(0x4000000, 1024,
+                        uc.UC_PROT_ALL, b"\x00" * 1024)
 
     def init_decomp_engine(self):
         self.decomp_engine = cs.Cs(self.config.CAPSTONE_ARCH,
@@ -42,7 +42,6 @@ class UnicornEngine():
 
     def hook_mem_invalid(self, unicorn, access, address, size, value, user_data):
         pc = unicorn.reg_read(uc.arm_const.UC_ARM_REG_PC)
-        print(f"SP: {hex(unicorn.reg_read(uc.arm_const.UC_ARM_REG_SP))}")
         if access == uc.UC_MEM_WRITE:
             print(
                 f"invalid WRITE of 0x{address:x} at 0x{pc:X}, data size = {size}, data value = 0x{value:x}")
