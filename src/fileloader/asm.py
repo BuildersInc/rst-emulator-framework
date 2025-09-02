@@ -1,11 +1,10 @@
 import logging
 from pathlib import Path
 
-from unicorn import Uc, UC_ARCH_ARM, UC_MODE_ARM, UcError
-from unicorn.arm_const import UC_ARM_REG_R0, UC_ARM_REG_R1, UC_ARM_REG_R2
-from keystone import Ks, KS_ARCH_ARM, KS_MODE_THUMB, KS_MODE_ARM,  KsError
+from keystone import Ks
 
 from config.emulation_config import RSTEmulationConfig, default_config
+
 
 class ASMFile:
     def __init__(self, path_to_file: Path, config: RSTEmulationConfig):
@@ -13,12 +12,13 @@ class ASMFile:
         self.path = path_to_file
         self.config = config
         self.file_content = self.path.read_text(encoding="utf-8").strip()
+        self._inst_count = 0
         self._byte_code = None
         self._compiled = False
 
     def compile_file(self):
         ks_obj = Ks(self.config.KEYSTONE_ARCH, self.config.KEYSTONE_MODE)
-        arm_arr_int_bytes, _ = ks_obj.asm(self.file_content)
+        arm_arr_int_bytes, self.instruction_count = ks_obj.asm(self.file_content)
         self.byte_code = bytes(arm_arr_int_bytes)
 
         out = self.path.parent / "compiled.obj"
@@ -41,6 +41,23 @@ class ASMFile:
     def byte_code(self, value):
         self._compiled = True
         self._byte_code = value
+
+    @property
+    def instruction_count(self):
+        """
+        Number of instructions in the file
+
+        Raises:
+            RuntimeError: Raises when accessed before compilation
+
+        """
+        if not self._compiled:
+            raise RuntimeError("ASM File is not compiled yet")
+        return self._inst_count
+
+    @instruction_count.setter
+    def instruction_count(self, value):
+        self._inst_count = value
 
     def __len__(self):
         return len(self.byte_code)

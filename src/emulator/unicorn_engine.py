@@ -5,6 +5,7 @@ import unicorn as uc
 import capstone as cs
 
 from config.emulation_config import RSTEmulationConfig
+from fileloader.asm import ASMFile
 
 
 class UnicornEngine():
@@ -20,10 +21,19 @@ class UnicornEngine():
         raise NotImplementedError()
 
     def init(self):
+        """
+        Wrapper function to load
+        decompilation and emulation engine
+        """
         self.init_decomp_engine()
         self.init_emu_engine()
 
     def init_emu_engine(self):
+        """
+        Initialize emulation engine
+        - Init stack
+        - Reserve memory for register map
+        """
         self.emu_engine = Uc(self.config.UNICORN_ARCH,
                              self.config.UNICORN_MODE)
         logging.debug("Init Stack")
@@ -32,15 +42,64 @@ class UnicornEngine():
 
         self.emu_engine.reg_write(uc.arm_const.UC_ARM_REG_SP,
                                   self.config.STACK_BASE + (self.config.STACK_SIZE // 2))
-        self.map_memory(0x4000000, 1024,
-                        uc.UC_PROT_ALL, b"\x00" * 1024)
+        logging.debug("Load Register Memory space from %s till %s",
+                      hex(self.config.REGISTER_MEMORY_SPACE_START),
+                      hex(self.config.REGISTER_MEMORY_SPACE_START +
+                          self.config.REGISTER_MEMORY_SPACE_SIZE))
+
+        self.map_memory(self.config.REGISTER_MEMORY_SPACE_START,
+                        self.config.REGISTER_MEMORY_SPACE_SIZE,
+                        uc.UC_PROT_ALL,
+                        b"\x00" * self.config.REGISTER_MEMORY_SPACE_SIZE)
 
     def init_decomp_engine(self):
+        """
+        Initialise decompilation capstone engine
+        needed for tracing errors
+        """
         self.decomp_engine = cs.Cs(self.config.CAPSTONE_ARCH,
                                    self.config.CAPSTONE_MODE)
         self.decomp_engine.detail = True
 
-    def hook_mem_invalid(self, unicorn, access, address, size, value, user_data):
+    def map_memory(self, address: int,
+                   size: int, prot_mode: int,
+                   value: bytes
+                   ):
+        """
+        Reserves a memory space and
+        loads it with the provided value
+
+
+        Args:
+            address (int): Starting address
+            size (int): How many bytes
+            prot_mode (int): Protection mode the memory space
+            value (bytes): Memory content
+        """
+        page_size = 0x1000
+        aligned_size = ((size + page_size - 1) // page_size) * page_size
+        self.emu_engine.mem_map(address, aligned_size, prot_mode)
+        self.emu_engine.mem_write(address, value)
+
+    def emulation_add_hooks(self):
+        """
+        Attaches hooks that logs certain states
+        - Print each line
+        - Print invalid memory access
+        """
+        self.emu_engine.hook_add(uc.UC_HOOK_CODE,
+                                 self._hook_code)
+        self.emu_engine.hook_add(uc.UC_HOOK_MEM_INVALID,
+                                 self._hook_mem_invalid)
+
+    def load_code(self, code: ASMFile):
+
+        self.map_memory(self.config.CODE_START, len(code),
+                        uc.UC_PROT_ALL, code.byte_code)
+        logging.debug("Loaded %i Instructions at address %s",
+                      code.instruction_count, hex(self.config.CODE_START))
+
+    def _hook_mem_invalid(self, unicorn, access, address, size, value, user_data):
         pc = unicorn.reg_read(uc.arm_const.UC_ARM_REG_PC)
         if access == uc.UC_MEM_WRITE:
             print(
@@ -66,27 +125,13 @@ class UnicornEngine():
         if access == uc.UC_MEM_FETCH_PROT:
             print(
                 f"UC_MEM_FETCH_PROT of 0x{address:x} at 0x{pc:X}, data size = {size}")
-        if access == uc.UC_MEM_FETCH_PROT:  # duplicate case in your original
-            print(
-                f"UC_MEM_FETCH_PROT of 0x{address:x} at 0x{pc:X}, data size = {size}")
         if access == uc.UC_MEM_READ_AFTER:
             print(
                 f"UC_MEM_READ_AFTER of 0x{address:x} at 0x{pc:X}, data size = {size}")
         return False
 
-    def hook_code(self, unicorn, addr, size, user_data):
+    def _hook_code(self, unicorn, addr, size, user_data):
         mem = unicorn.mem_read(addr, size)
         for insn in self.decomp_engine.disasm(mem, addr):
             print(f"{hex(insn.address)}\t{insn.mnemonic}\t{insn.op_str}")
         return True
-
-    def map_memory(self, address: int,
-                   size: int, prot_mode: int,
-                   value: bytes
-                   ):
-        self.emu_engine.mem_map(address, size, prot_mode)
-        self.emu_engine.mem_write(address, value)
-
-    def emulation_add_hooks(self):
-        self.emu_engine.hook_add(uc.UC_HOOK_CODE, self.hook_code)
-        self.emu_engine.hook_add(uc.UC_HOOK_MEM_INVALID, self.hook_mem_invalid)

@@ -1,8 +1,8 @@
-from unicorn import UC_PROT_ALL
 import unicorn as uc
 
 from fileloader.asm import ASMFile
 from config.emulation_config import RSTEmulationConfig
+from config.constants import RCGC_GPIO_R
 from emulator.unicorn_engine import UnicornEngine
 
 
@@ -11,30 +11,14 @@ class ASMEmulator(UnicornEngine):
         super().__init__(config)
         self.asm_file = asm_file
         self.config = config
-        self.initial_address = 0x1000000
 
-    def prepare_emulation(self):
-        self._ensure_thumb_mode()
+    def prepare_emulation(self) -> None:
         self.emulation_add_hooks()
-        self.map_memory(self.initial_address, 1024*4,
-                        UC_PROT_ALL, self.asm_file.byte_code)
+        self.load_code(self.asm_file)
 
-    def start_emulation(self):
+    def start_emulation(self) -> None:
         self.prepare_emulation()
-        self.emu_engine.emu_start(self.initial_address | 1,
-                                  self.initial_address + len(self.asm_file))
+        self.emu_engine.emu_start(self.config.CODE_START | 1,
+                                  self.config.CODE_START + self.asm_file.instruction_count)
         print(self.emu_engine.reg_read(uc.arm_const.UC_ARM_REG_R0))
-        print(self.emu_engine.mem_read(0x4000000, 4).hex())
-
-    def _ensure_thumb_mode(self) -> bool:
-        """
-        Sets the the thumb mode register
-
-        Returns:
-            bool: Thumb mode is enabled
-        """
-
-        cpsr = self.emu_engine.reg_read(uc.arm_const.UC_ARM_REG_CPSR)
-        self.emu_engine.reg_write(
-            uc.arm_const.UC_ARM_REG_CPSR, cpsr | (1 << 5))
-        return (self.emu_engine.reg_read(uc.arm_const.UC_ARM_REG_CPSR) & (1 << 5)) != 0
+        print(self.emu_engine.mem_read(RCGC_GPIO_R, 4).hex())
