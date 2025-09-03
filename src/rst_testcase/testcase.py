@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+
 import logging
 from datetime import timedelta
 from enum import Enum, auto
@@ -6,6 +6,7 @@ from typing import List
 
 from config.TM4C123GH6PM import GPIO
 from emulator.unicorn_engine import UnicornEngine
+from rst_testcase.pre_condition import PreCondition
 
 
 class Direction(Enum):
@@ -13,24 +14,10 @@ class Direction(Enum):
     OUTPUT = auto()
 
 
-class PreCondition(ABC):
-    def __init__(self):
-        super().__init__()
-        self.passed = False
-
-    @abstractmethod
-    def check_pre_condition(self, emulation: UnicornEngine) -> bool:
-        pass
-
-    def _check_precon(self, emulation: UnicornEngine) -> bool:
-        self.passed = self.check_pre_condition(emulation)
-        return self.passed
-
-
 class IOEvent:
     def __init__(self, direction: Direction,
                  gpio: GPIO,
-                 port: int,
+                 port: int, event_name: str,
                  time_delay: timedelta) -> None:
 
         self.direction: Direction = direction
@@ -43,11 +30,14 @@ class IOEvent:
         self._is_pressed = False
         self._tries = 0
         self._precon: List[PreCondition] = []
+        self.event_name = f"EVENT:{event_name}"
 
     def trigger_input(self, emulation: UnicornEngine):
-        all_passed = True
-        for precon in self._precon:
-            all_passed = precon._check_precon(emulation)
+
+        all_passed = all([precon._check_precon(emulation) for precon in self._precon])
+
+        # for precon in self._precon:
+        #     all_passed = precon._check_precon(emulation)
         if not all_passed:
             return
         logging.info("All Precons passed")
@@ -63,7 +53,7 @@ class IOEvent:
         if not check:
             self._tries += 1
 
-        if self._tries == 5:
+        if self._tries == 30:
             self.failed = True
 
     def print_result(self):

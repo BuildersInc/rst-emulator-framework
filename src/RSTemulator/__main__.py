@@ -5,11 +5,12 @@ from unicorn import UcError
 from keystone import KsError
 
 from fileloader import asm
-from emulator import asm_emulator, unicorn_engine
+from emulator import asm_emulator
 from config.emulation_config import default_config
-from config.TM4C123GH6PM import APB_GPIO_PORT_F, RCGC_GPIO_R
-from rstutils.rst_utils import invert_bits
+from config.TM4C123GH6PM import APB_GPIO_PORT_F
 import rst_testcase.testcase as rst_test
+from rst_testcase.pre_condition import RCGC_PORT_F_IS_SET, GPIO_PORT_F_PUR, \
+                                        GPIO_PORT_F_DIR, GPIO_PORT_F_DEN
 
 
 def get_parser():
@@ -61,25 +62,6 @@ def setup_logger(args) -> None:
     logging.getLogger().addHandler(console_handler)
     logging.getLogger().setLevel(level)
 
-class RCGC_IS_SET(rst_test.PreCondition):
-    def check_pre_condition(self, emulation: unicorn_engine.UnicornEngine) -> bool:
-        return emulation.mask_is_set(RCGC_GPIO_R, 0x08)
-
-
-class GPIO_PORT_F_DEN(rst_test.PreCondition):
-    def check_pre_condition(self, emulation: unicorn_engine.UnicornEngine) -> bool:
-        return emulation.mask_is_set(APB_GPIO_PORT_F.DEN, 0x10)
-
-
-class GPIO_PORT_F_DIR(rst_test.PreCondition):
-    def check_pre_condition(self, emulation: unicorn_engine.UnicornEngine) -> bool:
-        return emulation.mask_is_set(APB_GPIO_PORT_F.DIR, invert_bits(0x10))
-
-
-class GPIO_PORT_F_PUR(rst_test.PreCondition):
-    def check_pre_condition(self, emulation: unicorn_engine.UnicornEngine) -> bool:
-        return emulation.mask_is_set(APB_GPIO_PORT_F.PUR, 0x10)
-
 
 def main(args):
     config = default_config()
@@ -88,12 +70,13 @@ def main(args):
         rst_test.Direction.INPUT,
         APB_GPIO_PORT_F,
         0x10,
+        "TestEvent",
         timedelta(seconds=1)
     )
-    btn_press.add_precondition(RCGC_IS_SET())
-    btn_press.add_precondition(GPIO_PORT_F_DEN())
-    btn_press.add_precondition(GPIO_PORT_F_DIR())
-    btn_press.add_precondition(GPIO_PORT_F_PUR())
+    btn_press.add_precondition(RCGC_PORT_F_IS_SET("RCGC Check"))
+    btn_press.add_precondition(GPIO_PORT_F_DEN("DEN Check"))
+    btn_press.add_precondition(GPIO_PORT_F_DIR("DIR Check"))
+    btn_press.add_precondition(GPIO_PORT_F_PUR("PUR Check"))
 
     test_case.attach_event(btn_press)
     try:

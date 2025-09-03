@@ -1,3 +1,5 @@
+import logging
+
 import unicorn as uc
 
 from fileloader.asm import ASMFile
@@ -48,6 +50,7 @@ class ASMEmulator(UnicornEngine):
                     continue
 
                 if event.is_input():
+                    logging.debug("Triggering Input for %s", event.event_name)
                     event.trigger_input(self)
                 result = event.check_condition(self)
 
