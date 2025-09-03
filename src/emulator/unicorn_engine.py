@@ -8,6 +8,11 @@ from config.emulation_config import RSTEmulationConfig
 from fileloader.asm import ASMFile
 
 
+def invert_bits(value: int, bits: int = (4 * 8)) -> int:
+    mask = (1 << bits) - 1
+    return value ^ mask
+
+
 class UnicornEngine():
     def __init__(self, config: RSTEmulationConfig):
         self.config = config
@@ -98,6 +103,36 @@ class UnicornEngine():
                         uc.UC_PROT_ALL, code.byte_code)
         logging.debug("Loaded %i Instructions at address %s",
                       code.instruction_count, hex(self.config.CODE_START))
+
+    def safe_set_value_in_memory(self, address, value, size=4):
+        register_state = self.emu_engine.mem_read(
+            address, size
+        )
+        register_state = int.from_bytes(register_state, 'little')
+        register_state |= value
+
+        register_state = bytes(bytearray(register_state.to_bytes(size, 'little')))
+        self.emu_engine.mem_write(
+            address, register_state
+        )
+
+    def safe_clear_value_in_memory(self, address, value, size=4):
+        register_state = self.emu_engine.mem_read(
+                address, size
+            )
+        register_state = int.from_bytes(register_state, 'little')
+        register_state &= invert_bits(value)
+        register_state = bytes(bytearray(register_state.to_bytes(size, 'little')))
+        self.emu_engine.mem_write(
+            address, register_state
+        )
+
+    def mask_is_set(self, address, mask, size=4) -> bool:
+        register_state = self.emu_engine.mem_read(
+            address, size
+        )
+
+        return (int.from_bytes(register_state, 'little') & mask) == mask
 
     def _hook_mem_invalid(self, unicorn, access, address, size, value, user_data):
         pc = unicorn.reg_read(uc.arm_const.UC_ARM_REG_PC)

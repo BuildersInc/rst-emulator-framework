@@ -1,13 +1,20 @@
 import logging
 import argparse
-
+from datetime import timedelta
 from unicorn import UcError
 from keystone import KsError
 
 from fileloader import asm
-from emulator import asm_emulator
+from emulator import asm_emulator, unicorn_engine
 from config.emulation_config import default_config
+from config.TM4C123GH6PM import APB_GPIO_PORT_F, RCGC_GPIO_R
 
+import rst_testcase.testcase as rst_test
+
+
+def invert_bits(value: int, bits: int = (4 * 8)) -> int:
+    mask = (1 << bits) - 1
+    return value ^ mask
 
 def get_parser():
     """
@@ -58,16 +65,49 @@ def setup_logger(args) -> None:
     logging.getLogger().addHandler(console_handler)
     logging.getLogger().setLevel(level)
 
+class RCGC_IS_SET(rst_test.PreCondition):
+    def check_pre_condition(self, emulation: unicorn_engine.UnicornEngine) -> bool:
+        return emulation.mask_is_set(RCGC_GPIO_R, 0x08)
+
+
+class GPIO_PORT_F_DEN(rst_test.PreCondition):
+    def check_pre_condition(self, emulation: unicorn_engine.UnicornEngine) -> bool:
+        return emulation.mask_is_set(APB_GPIO_PORT_F.DEN, 0x10)
+
+
+class GPIO_PORT_F_DIR(rst_test.PreCondition):
+    def check_pre_condition(self, emulation: unicorn_engine.UnicornEngine) -> bool:
+        return emulation.mask_is_set(APB_GPIO_PORT_F.DIR, invert_bits(0x10))
+
+
+class GPIO_PORT_F_PUR(rst_test.PreCondition):
+    def check_pre_condition(self, emulation: unicorn_engine.UnicornEngine) -> bool:
+        return emulation.mask_is_set(APB_GPIO_PORT_F.PUR, 0x10)
+
 
 def main(args):
     config = default_config()
+    test_case = rst_test.Testcase()
+    btn_press = rst_test.IOEvent(
+        rst_test.Direction.INPUT,
+        APB_GPIO_PORT_F,
+        0x10,
+        timedelta(seconds=1)
+    )
+    btn_press.add_precondition(RCGC_IS_SET())
+    btn_press.add_precondition(GPIO_PORT_F_DEN())
+    btn_press.add_precondition(GPIO_PORT_F_DIR())
+    btn_press.add_precondition(GPIO_PORT_F_PUR())
+
+    test_case.attach_event(btn_press)
     try:
         asm_file = asm.load_file(args.input_file, config)
         asm_file.compile_file()
         emulator = asm_emulator.ASMEmulator(asm_file, config)
         emulator.init()
-        emulator.start_emulation()
-
+        # emulator.start_emulation()
+        emulator.prepare_emulation()
+        emulator.start_emulation_with_test(test_case)
     except KsError as error_msg:
         logging.critical("Assembling failed %s", error_msg)
     except UcError as error_msg:

@@ -2,23 +2,50 @@ import unicorn as uc
 
 from fileloader.asm import ASMFile
 from config.emulation_config import RSTEmulationConfig
-from config.constants import RCGC_GPIO_R
 from emulator.unicorn_engine import UnicornEngine
 
+from rst_testcase.testcase import Testcase
 
 class ASMEmulator(UnicornEngine):
     def __init__(self, asm_file: ASMFile, config: RSTEmulationConfig):
         super().__init__(config)
         self.asm_file = asm_file
         self.config = config
+        self.executed_instruction_count: int = 0
 
     def prepare_emulation(self) -> None:
         self.emulation_add_hooks()
         self.load_code(self.asm_file)
 
-    def start_emulation(self) -> None:
-        self.prepare_emulation()
+    def non_stop_emulation(self) -> None:
         self.emu_engine.emu_start(self.config.CODE_START | 1,
                                   self.config.CODE_START + self.asm_file.instruction_count)
-        print(self.emu_engine.reg_read(uc.arm_const.UC_ARM_REG_R0))
-        print(self.emu_engine.mem_read(RCGC_GPIO_R, 4).hex())
+
+    def step(self, step_count: int = 1):
+        program_counter = self.emu_engine.reg_read(uc.arm_const.UC_ARM_REG_PC)
+        self.emu_engine.emu_start((self.config.CODE_START + program_counter) | 1,
+                                  self.config.CODE_START + self.asm_file.instruction_count,
+                                  count=step_count)
+        self.executed_instruction_count += step_count
+
+    def start_emulation_with_test(self, testcase: Testcase):
+        running = True
+        while running:
+            if self.executed_instruction_count + 10 > self.asm_file.instruction_count:
+                running = False
+                break
+            self.step(10)
+            for event in testcase:
+                if event.passed:
+                    continue
+
+                if event.is_input():
+                    event.trigger_input(self)
+                result = event.check_condition(self)
+
+                if result:
+                    event.passed = True
+            if testcase.all_failed() or testcase.all_passed():
+                running = False
+        for event in testcase:
+            event.print_result()
