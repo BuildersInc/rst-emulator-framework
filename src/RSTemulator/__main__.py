@@ -8,13 +8,9 @@ from fileloader import asm
 from emulator import asm_emulator, unicorn_engine
 from config.emulation_config import default_config
 from config.TM4C123GH6PM import APB_GPIO_PORT_F, RCGC_GPIO_R
-
+from rstutils.rst_utils import invert_bits
 import rst_testcase.testcase as rst_test
 
-
-def invert_bits(value: int, bits: int = (4 * 8)) -> int:
-    mask = (1 << bits) - 1
-    return value ^ mask
 
 def get_parser():
     """

@@ -5,12 +5,8 @@ import unicorn as uc
 import capstone as cs
 
 from config.emulation_config import RSTEmulationConfig
+from rstutils.rst_utils import invert_bits
 from fileloader.asm import ASMFile
-
-
-def invert_bits(value: int, bits: int = (4 * 8)) -> int:
-    mask = (1 << bits) - 1
-    return value ^ mask
 
 
 class UnicornEngine():
@@ -20,9 +16,6 @@ class UnicornEngine():
         self.decomp_engine: cs.Cs = None
 
     def prepare_emulation(self):
-        raise NotImplementedError()
-
-    def start_emulation(self):
         raise NotImplementedError()
 
     def init(self):

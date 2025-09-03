@@ -22,6 +22,13 @@ class ASMEmulator(UnicornEngine):
                                   self.config.CODE_START + self.asm_file.instruction_count)
 
     def step(self, step_count: int = 1):
+        """
+        Executes <step_count> Steps of the Simulation
+
+        Args:
+            step_count (int, optional): How many steps shall be executed.
+                Defaults to 1.
+        """
         program_counter = self.emu_engine.reg_read(uc.arm_const.UC_ARM_REG_PC)
         self.emu_engine.emu_start((self.config.CODE_START + program_counter) | 1,
                                   self.config.CODE_START + self.asm_file.instruction_count,
@@ -31,6 +38,7 @@ class ASMEmulator(UnicornEngine):
     def start_emulation_with_test(self, testcase: Testcase):
         running = True
         while running:
+            # TODO Fix this. This is a hacky way
             if self.executed_instruction_count + 10 > self.asm_file.instruction_count:
                 running = False
                 break
