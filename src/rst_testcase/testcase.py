@@ -36,8 +36,6 @@ class IOEvent:
 
         all_passed = all([precon._check_precon(emulation) for precon in self._precon])
 
-        # for precon in self._precon:
-        #     all_passed = precon._check_precon(emulation)
         if not all_passed:
             return
         logging.info("All Precons passed")

@@ -1,16 +1,14 @@
 import logging
 import argparse
-from datetime import timedelta
+import importlib.util
+import sys
+
 from unicorn import UcError
 from keystone import KsError
 
 from fileloader import asm
 from emulator import asm_emulator
-from config.emulation_config import default_config
-from config.TM4C123GH6PM import APB_GPIO_PORT_F
-import rst_testcase.testcase as rst_test
-from rst_testcase.pre_condition import RCGC_PORT_F_IS_SET, GPIO_PORT_F_PUR, \
-                                        GPIO_PORT_F_DIR, GPIO_PORT_F_DEN
+from rstutils import rst_utils
 
 
 def get_parser():
@@ -34,8 +32,9 @@ def get_parser():
                                  help="Do not log into a \"LastRun.log\" file")
 
     new_parser.add_argument("--asm-file", "-asm", required=True, dest="input_file",
-
-                            help="Provide input file")
+                            help="Provide input assembly file")
+    new_parser.add_argument("--test-file", required=True, dest="testcase_file",
+                            help="The configured testcase")
     return new_parser
 
 
@@ -64,25 +63,28 @@ def setup_logger(args) -> None:
 
 
 def main(args):
-    config = default_config()
-    test_case = rst_test.Testcase()
-    btn_press = rst_test.IOEvent(
-        rst_test.Direction.INPUT,
-        APB_GPIO_PORT_F,
-        0x10,
-        "TestEvent",
-        timedelta(seconds=1)
-    )
-    btn_press.add_precondition(RCGC_PORT_F_IS_SET("RCGC Check"))
-    btn_press.add_precondition(GPIO_PORT_F_DEN("DEN Check"))
-    btn_press.add_precondition(GPIO_PORT_F_DIR("DIR Check"))
-    btn_press.add_precondition(GPIO_PORT_F_PUR("PUR Check"))
+    test_file = rst_utils.absolute_path(args.testcase_file)
+    spec = importlib.util.spec_from_file_location("testcase_file", test_file)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
 
-    test_case.attach_event(btn_press)
+    if hasattr(mod, "TEST_DEPENDENCIES") and any(mod.TEST_DEPENDENCIES):
+        logging.info("Loading dependencies of the testfile")
+        # Todo
+
+    if not hasattr(mod, "TEST_UC_CONFIG"):
+        logging.critical("Missing UC Config")
+        sys.exit(1)
+    if not hasattr(mod, "TESTCASE"):
+        logging.critical("Missing Testcase")
+        sys.exit(1)
+
+    test_case = mod.TESTCASE
+
     try:
-        asm_file = asm.load_file(args.input_file, config)
+        asm_file = asm.load_file(args.input_file, mod.TEST_UC_CONFIG)
         asm_file.compile_file()
-        emulator = asm_emulator.ASMEmulator(asm_file, config)
+        emulator = asm_emulator.ASMEmulator(asm_file, mod.TEST_UC_CONFIG)
         emulator.init()
         # emulator.start_emulation()
         emulator.prepare_emulation()

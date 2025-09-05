@@ -4,7 +4,7 @@ from pathlib import Path
 from keystone import Ks
 
 from config.emulation_config import RSTEmulationConfig, default_config
-
+from rstutils import rst_utils
 
 class ASMFile:
     def __init__(self, path_to_file: Path, config: RSTEmulationConfig):
@@ -74,13 +74,7 @@ def load_file(path_to_file: str, config: RSTEmulationConfig = None) -> ASMFile:
         ASMFile: compiled asm File
     """
 
-    path = Path(path_to_file)
-    if not path.is_absolute():
-        path = path.absolute()
-
-    if not path.exists():
-        logging.critical("File %s not Found", path)
-        return FileNotFoundError(path.as_posix())
+    path = rst_utils.absolute_path(path_to_file)
 
     if config is None:
         logging.info("keystone uses default config")
