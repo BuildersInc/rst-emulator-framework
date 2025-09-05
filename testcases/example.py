@@ -20,10 +20,24 @@ class GpioPortFDen(PreCondition):
 TEST_DEPENDENCIES: List[str] = [
 
 ]
+"""
+Insert for the test needed external dependencies here.
+This part is optional
+
+Reserved for the future
+"""
 
 TEST_UC_CONFIG: RSTEmulationConfig = default_config()
+"""
+UC Configuration.
+For example the architecture and Mode
+"""
 
 TESTCASE = Testcase()
+"""
+Inits a test case
+needs to be populated with events after the initialization
+"""
 
 
 btn_press = IOEvent(
@@ -31,7 +45,7 @@ btn_press = IOEvent(
     APB_GPIO_PORT_F,
     0x10,
     "TestEvent",
-    timedelta(seconds=1)
+    timedelta(seconds=0)
 )
 btn_press.add_precondition(RCGC_PORT_F_IS_SET("RCGC Check"))
 btn_press.add_precondition(GpioPortFDen("DEN Check"))

@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 
 import unicorn as uc
 
@@ -8,12 +9,14 @@ from emulator.unicorn_engine import UnicornEngine
 
 from rst_testcase.testcase import Testcase
 
+
 class ASMEmulator(UnicornEngine):
     def __init__(self, asm_file: ASMFile, config: RSTEmulationConfig):
         super().__init__(config)
         self.asm_file = asm_file
         self.config = config
         self.executed_instruction_count: int = 0
+        self.start_time: datetime = None
 
     def prepare_emulation(self) -> None:
         self.emulation_add_hooks()
@@ -38,6 +41,7 @@ class ASMEmulator(UnicornEngine):
         self.executed_instruction_count += step_count
 
     def start_emulation_with_test(self, testcase: Testcase):
+        self.start_time = datetime.now()
         running = True
         while running:
             # TODO Fix this. This is a hacky way
@@ -51,7 +55,7 @@ class ASMEmulator(UnicornEngine):
 
                 if event.is_input():
                     logging.debug("Triggering Input for %s", event.event_name)
-                    event.trigger_input(self)
+                    event.trigger_input(self, self.start_time)
                 result = event.check_condition(self)
 
                 if result:

@@ -1,6 +1,6 @@
 
 import logging
-from datetime import timedelta
+from datetime import timedelta, datetime
 from enum import Enum, auto
 from typing import List
 
@@ -32,7 +32,10 @@ class IOEvent:
         self._precon: List[PreCondition] = []
         self.event_name = f"EVENT:{event_name}"
 
-    def trigger_input(self, emulation: UnicornEngine):
+    def trigger_input(self, emulation: UnicornEngine, emulation_start_time: datetime):
+
+        if datetime.now() - emulation_start_time < self.time_delay:
+            return
 
         all_passed = all([precon._check_precon(emulation) for precon in self._precon])
 
