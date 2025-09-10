@@ -87,9 +87,9 @@ init_hardware:
 LEDWHITE:
     // turn white-led on
     LDR R0, =GPIO_PORT_F_DATA_R
-    LDR R1, [R0]
-    ORR R1, R1, #white
-    STR R1, [R0]
+    LDR R5, [R0]
+    ORR R5, R5, #white
+    STR R5, [R0]
     BX LR
 Checkbutton:
     // check button sw1 pressed or not

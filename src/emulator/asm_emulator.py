@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import unicorn as uc
 
@@ -43,12 +43,13 @@ class ASMEmulator(UnicornEngine):
     def start_emulation_with_test(self, testcase: Testcase):
         self.start_time = datetime.now()
         running = True
+        time_delay = timedelta(seconds=5)
         while running:
-            # TODO Fix this. This is a hacky way
-            if self.executed_instruction_count + 10 > self.asm_file.instruction_count:
-                running = False
-                break
-            self.step(10)
+            # if (datetime.now() - self.start_time) > time_delay:
+            #     running = False
+            #     break
+
+            self.step(1)
             for event in testcase:
                 if event.passed:
                     continue
@@ -63,4 +64,5 @@ class ASMEmulator(UnicornEngine):
             if testcase.all_failed() or testcase.all_passed():
                 running = False
         for event in testcase:
+            print(f"Done after {(datetime.now() - self.start_time).seconds}")
             event.print_result()

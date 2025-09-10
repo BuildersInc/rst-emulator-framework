@@ -69,7 +69,7 @@ class IOEvent:
         precon_pass = self.check_precons(emulation, emulation_start_time)
         if precon_pass is None:
             return
-        elif precon_pass is False:
+        if precon_pass is False:
             self._tries += 1
             return
 
@@ -87,7 +87,7 @@ class IOEvent:
         self.passed = True
 
     def print_result(self):
-        if self.failed:
+        if self.failed or not self.passed:
             print("Test Failed")
         else:
             print("Test was successfull")

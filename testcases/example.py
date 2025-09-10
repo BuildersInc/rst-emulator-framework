@@ -100,5 +100,5 @@ led_event.add_precondition(RCGC_PORT_F_IS_SET("RCGC Check: LED"))
 led_event.add_precondition(GpioPortFDenLED("DEN Check: LED"))
 led_event.add_precondition(GpioPortFPinIsOutput("LED is Output"))
 
-TESTCASE.attach_event(btn_press)
+# TESTCASE.attach_event(btn_press)
 TESTCASE.attach_event(led_event)

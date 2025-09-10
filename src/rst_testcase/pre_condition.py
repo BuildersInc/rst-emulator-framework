@@ -3,7 +3,6 @@ import logging
 
 from emulator.unicorn_engine import UnicornEngine
 from config.TM4C123GH6PM import APB_GPIO_PORT_F, RCGC_GPIO_R
-from rstutils.rst_utils import invert_bits
 
 
 class PreCondition(ABC):
