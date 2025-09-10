@@ -6,7 +6,8 @@ from config.TM4C123GH6PM import APB_GPIO_PORT_F
 from emulator.unicorn_engine import UnicornEngine
 from rst_testcase.pre_condition import (GPIO_PORT_F_DIR, GPIO_PORT_F_PUR,
                                         RCGC_PORT_F_IS_SET, PreCondition)
-from rst_testcase.testcase import Direction, IOEvent, Testcase
+from rst_testcase.testcase import Testcase
+from rst_testcase.io_event import Direction, IOEvent
 
 
 class GpioPortFDen(PreCondition):

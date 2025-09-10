@@ -16,13 +16,20 @@ class ASMFile:
         self._byte_code = None
         self._compiled = False
 
-    def compile_file(self):
+    def compile_file(self, create_obj_file: bool = False):
+        self._prepare_file()
         ks_obj = Ks(self.config.KEYSTONE_ARCH, self.config.KEYSTONE_MODE)
         arm_arr_int_bytes, self.instruction_count = ks_obj.asm(self.file_content)
         self.byte_code = bytes(arm_arr_int_bytes)
 
-        out = self.path.parent / "compiled.obj"
-        out.write_bytes(self.byte_code)
+        if create_obj_file:
+            out = self.path.parent / "compiled.obj"
+            out.write_bytes(self.byte_code)
+
+    def _prepare_file(self) -> None:
+        """
+        Removes all unnecessary parts of the asm file
+        """
 
     @property
     def byte_code(self):
