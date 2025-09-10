@@ -31,7 +31,7 @@ class RCGC_PORT_F_IS_SET(PreCondition):
 
     """
     def check_pre_condition(self, emulation: UnicornEngine) -> bool:
-        return emulation.mask_is_set(RCGC_GPIO_R, 0x08)
+        return emulation.mask_is_set(RCGC_GPIO_R, 0x20)
 
 
 class GPIO_PORT_F_DEN(PreCondition):
@@ -48,7 +48,7 @@ class GPIO_PORT_F_DIR(PreCondition):
     """
 
     def check_pre_condition(self, emulation: UnicornEngine) -> bool:
-        return emulation.mask_is_set(APB_GPIO_PORT_F.DIR, invert_bits(0x10))
+        return emulation.mask_is_clear(APB_GPIO_PORT_F.DIR, 0x10)
 
 
 class GPIO_PORT_F_PUR(PreCondition):

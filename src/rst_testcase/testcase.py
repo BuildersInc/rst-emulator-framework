@@ -1,4 +1,4 @@
-
+import logging
 from typing import List
 
 from rst_testcase.io_event import IOEvent
@@ -9,6 +9,7 @@ class Testcase:
         self.event_list: List[IOEvent] = []
 
     def attach_event(self, event: IOEvent):
+        logging.debug("Attach event %s", event.event_name)
         self.event_list.append(event)
 
     def attach_multiple_events(self, event_list: List[IOEvent]):

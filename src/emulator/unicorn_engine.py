@@ -127,6 +127,13 @@ class UnicornEngine():
 
         return (int.from_bytes(register_state, 'little') & mask) == mask
 
+    def mask_is_clear(self, address, mask, size=4) -> bool:
+        register_state = self.emu_engine.mem_read(
+            address, size
+        )
+
+        return (int.from_bytes(register_state, 'little') & mask) == 0
+
     def _hook_mem_invalid(self, unicorn, access, address, size, value, user_data):
         pc = unicorn.reg_read(uc.arm_const.UC_ARM_REG_PC)
         if access == uc.UC_MEM_WRITE:

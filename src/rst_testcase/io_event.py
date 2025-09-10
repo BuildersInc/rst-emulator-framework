@@ -31,16 +31,21 @@ class IOEvent:
         self._precon: List[PreCondition] = []
         self.event_name = f"EVENT:{event_name}"
 
-    def trigger_input(self, emulation: UnicornEngine, emulation_start_time: datetime):
+    def check_precons(self, emulation: UnicornEngine,
+                      emulation_start_time: datetime) -> bool | None:
 
         if datetime.now() - emulation_start_time < self.time_delay:
-            return
+            return None
 
         all_passed = all([precon._check_precon(emulation) for precon in self._precon])
 
         if not all_passed:
-            return
-        logging.info("All Precons passed")
+            return False
+
+        logging.info("%s: All Precons passed", self.event_name)
+        return True
+
+    def trigger_input(self, emulation: UnicornEngine):
 
         if not self._is_pressed:
             self._set_input(emulation)
@@ -59,13 +64,27 @@ class IOEvent:
         """
         raise NotImplementedError()
 
-    def check_condition(self, emulation: UnicornEngine):
+    def check_condition(self, emulation: UnicornEngine,
+                        emulation_start_time: datetime):
+        precon_pass = self.check_precons(emulation, emulation_start_time)
+        if precon_pass is None:
+            return
+        elif precon_pass is False:
+            self._tries += 1
+            return
+
         check = self.pass_condition(emulation)
         if not check:
             self._tries += 1
+            return
 
         if self._tries == 30:
+            logging.debug("Event %s was Failed", self.event_name)
             self.failed = True
+            return
+
+        logging.debug("Event %s was successfull", self.event_name)
+        self.passed = True
 
     def print_result(self):
         if self.failed:

@@ -41,7 +41,7 @@ class GPIO:
     CELLID3: int = 0x00
 
     def __post_init__(self):
-        self.DATA = self.BASE + 0
+        self.DATA = self.BASE + 0x3FC
         self.DIR = self.BASE + 0x400
         self.IS = self.BASE + 0x404
         self.IBE = self.BASE + 0x408

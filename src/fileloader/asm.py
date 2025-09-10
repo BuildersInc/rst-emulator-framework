@@ -6,6 +6,7 @@ from keystone import Ks
 from config.emulation_config import RSTEmulationConfig, default_config
 from rstutils import rst_utils
 
+
 class ASMFile:
     def __init__(self, path_to_file: Path, config: RSTEmulationConfig):
         logging.debug("Load file with path %s", path_to_file)

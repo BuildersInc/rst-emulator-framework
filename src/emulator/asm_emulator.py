@@ -55,8 +55,8 @@ class ASMEmulator(UnicornEngine):
 
                 if event.is_input():
                     logging.debug("Triggering Input for %s", event.event_name)
-                    event.trigger_input(self, self.start_time)
-                result = event.check_condition(self)
+                    event.trigger_input(self)
+                result = event.check_condition(self, self.start_time)
 
                 if result:
                     event.passed = True

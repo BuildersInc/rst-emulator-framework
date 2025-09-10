@@ -9,6 +9,8 @@ from rst_testcase.pre_condition import (GPIO_PORT_F_DIR, GPIO_PORT_F_PUR,
 from rst_testcase.testcase import Testcase
 from rst_testcase.io_event import Direction, IOEvent
 
+LED_WHITE = 0x02 | 0x04 | 0x08
+
 
 class GpioPortFDen(PreCondition):
     """
@@ -18,12 +20,37 @@ class GpioPortFDen(PreCondition):
         return emulation.mask_is_set(APB_GPIO_PORT_F.DEN, 0x10)
 
 
+class GpioPortFDenLED(PreCondition):
+    """
+    Example Precondition
+    """
+    def check_pre_condition(self, emulation: UnicornEngine) -> bool:
+        return emulation.mask_is_set(APB_GPIO_PORT_F.DEN, LED_WHITE)
+
+
+class GpioPortFPinIsOutput(PreCondition):
+    """
+    Example Precondition
+    """
+    def check_pre_condition(self, emulation: UnicornEngine) -> bool:
+        return emulation.mask_is_set(APB_GPIO_PORT_F.DIR, LED_WHITE)
+
+
 class BtnPress(IOEvent):
     """
     Example IO Input event
     """
     def pass_condition(self, emulation: UnicornEngine):
         return emulation.mask_is_set(self.gpio_bank.DATA, self.port)
+
+
+class LEDWhite(IOEvent):
+    """
+    Check if LED is White
+
+    """
+    def pass_condition(self, emulation: UnicornEngine):
+        return emulation.mask_is_set(self.gpio_bank.DATA, LED_WHITE)
 
 
 TEST_DEPENDENCIES: List[str] = [
@@ -61,4 +88,17 @@ btn_press.add_precondition(GpioPortFDen("DEN Check"))
 btn_press.add_precondition(GPIO_PORT_F_DIR("DIR Check"))
 btn_press.add_precondition(GPIO_PORT_F_PUR("PUR Check"))
 
+led_event = LEDWhite(
+    Direction.OUTPUT,
+    APB_GPIO_PORT_F,
+    LED_WHITE,
+    "LED_EVENT",
+    timedelta(seconds=0)
+)
+
+led_event.add_precondition(RCGC_PORT_F_IS_SET("RCGC Check: LED"))
+led_event.add_precondition(GpioPortFDenLED("DEN Check: LED"))
+led_event.add_precondition(GpioPortFPinIsOutput("LED is Output"))
+
 TESTCASE.attach_event(btn_press)
+TESTCASE.attach_event(led_event)
