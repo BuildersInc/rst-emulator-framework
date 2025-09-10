@@ -4,7 +4,6 @@ from typing import List
 from rst_testcase.io_event import IOEvent
 
 
-
 class Testcase:
     def __init__(self):
         self.event_list: List[IOEvent] = []

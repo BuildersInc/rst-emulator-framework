@@ -18,6 +18,14 @@ class GpioPortFDen(PreCondition):
         return emulation.mask_is_set(APB_GPIO_PORT_F.DEN, 0x10)
 
 
+class BtnPress(IOEvent):
+    """
+    Example IO Input event
+    """
+    def pass_condition(self, emulation: UnicornEngine):
+        return emulation.mask_is_set(self.gpio_bank.DATA, self.port)
+
+
 TEST_DEPENDENCIES: List[str] = [
 
 ]
@@ -41,7 +49,7 @@ needs to be populated with events after the initialization
 """
 
 
-btn_press = IOEvent(
+btn_press = BtnPress(
     Direction.INPUT,
     APB_GPIO_PORT_F,
     0x10,

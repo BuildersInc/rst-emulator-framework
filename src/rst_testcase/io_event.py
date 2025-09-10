@@ -41,15 +41,26 @@ class IOEvent:
         if not all_passed:
             return
         logging.info("All Precons passed")
-        if self.direction == Direction.OUTPUT:
-            raise IOError("IO Event must be of type input for an Input Trigger")
+
         if not self._is_pressed:
             self._set_input(emulation)
         else:
             self._release_input(emulation)
 
+    def pass_condition(self, emulation: UnicornEngine) -> bool:
+        """
+        Implement a check that checks the emulation / register state
+
+        Args:
+            emulation (UnicornEngine): emulation Engine with context
+
+        Returns:
+            bool: _description_
+        """
+        raise NotImplementedError()
+
     def check_condition(self, emulation: UnicornEngine):
-        check = emulation.mask_is_set(self.gpio_bank.DATA, self.port)
+        check = self.pass_condition(emulation)
         if not check:
             self._tries += 1
 
@@ -69,9 +80,13 @@ class IOEvent:
         return self.direction == Direction.INPUT
 
     def _set_input(self, emulation: UnicornEngine):
+        if self.direction == Direction.OUTPUT:
+            raise IOError("IO Event must be of type input for an Input Trigger")
         emulation.safe_set_value_in_memory(self.gpio_bank.DATA, self.port)
 
     def _release_input(self, emulation: UnicornEngine):
+        if self.direction == Direction.OUTPUT:
+            raise IOError("IO Event must be of type input for an Input Trigger")
         emulation.safe_clear_value_in_memory(self.gpio_bank.DATA, self.port)
 
     @property
