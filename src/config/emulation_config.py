@@ -26,6 +26,7 @@ class RSTEmulationConfig:
     USER_MEMORY_SPACE_SIZE: int
 
     CODE_START: int
+    EMULATION_SPEED: int
 # pylint: enable=all
 
 
@@ -49,5 +50,6 @@ def default_config() -> RSTEmulationConfig:
         REGISTER_MEMORY_SPACE_SIZE=0x10000000,
         USER_MEMORY_SPACE_START=0,
         USER_MEMORY_SPACE_SIZE=0,
-        CODE_START=0x00
+        CODE_START=0x00,
+        EMULATION_SPEED=100_000
     )
