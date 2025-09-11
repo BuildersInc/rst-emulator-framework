@@ -43,13 +43,14 @@ class ASMEmulator(UnicornEngine):
     def start_emulation_with_test(self, testcase: Testcase):
         self.start_time = datetime.now()
         running = True
-        time_delay = timedelta(seconds=5)
+        max_time = timedelta(seconds=60)
         while running:
-            # if (datetime.now() - self.start_time) > time_delay:
-            #     running = False
-            #     break
+            if (datetime.now() - self.start_time) > max_time:
+                running = False
+                logging.critical("Max time reached")
+                break
 
-            self.step(1)
+            self.step(self.config.EMULATION_SPEED)
             for event in testcase:
                 if event.passed:
                     continue
@@ -64,5 +65,5 @@ class ASMEmulator(UnicornEngine):
             if testcase.all_failed() or testcase.all_passed():
                 running = False
         for event in testcase:
-            print(f"Done after {(datetime.now() - self.start_time).seconds}")
+            print(f"Done after {(datetime.now() - self.start_time).microseconds}")
             event.print_result()

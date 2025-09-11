@@ -137,36 +137,45 @@ class UnicornEngine():
     def _hook_mem_invalid(self, unicorn, access, address, size, value, user_data):
         pc = unicorn.reg_read(uc.arm_const.UC_ARM_REG_PC)
         if access == uc.UC_MEM_WRITE:
-            print(
-                f"invalid WRITE of 0x{address:x} at 0x{pc:X}, data size = {size}, data value = 0x{value:x}")
+            logging.critical(
+                "invalid WRITE of 0x%x at 0x%X, data size = %d, data value = 0x%x",
+                address, pc, size, value)
         if access == uc.UC_MEM_READ:
-            print(
-                f"invalid READ of 0x{address:x} at 0x{pc:X}, data size = {size}")
+            logging.critical(
+                "invalid READ of 0x%x at 0x%X, data size = %d",
+                address, pc, size)
         if access == uc.UC_MEM_FETCH:
-            print(
-                f"UC_MEM_FETCH of 0x{address:x} at 0x{pc:X}, data size = {size}")
+            logging.critical(
+                "UC_MEM_FETCH of 0x%x at 0x%X, data size = %d",
+                address, pc, size)
         if access == uc.UC_MEM_READ_UNMAPPED:
-            print(
-                f"UC_MEM_READ_UNMAPPED of 0x{address:x} at 0x{pc:X}, data size = {size}")
+            logging.critical(
+                "UC_MEM_READ_UNMAPPED of 0x%x at 0x%X, data size = %d",
+                address, pc, size)
         if access == uc.UC_MEM_WRITE_UNMAPPED:
-            print(
-                f"UC_MEM_WRITE_UNMAPPED of 0x{address:x} at 0x{pc:X}, data size = {size}")
+            logging.critical(
+                "UC_MEM_WRITE_UNMAPPED of 0x%x at 0x%X, data size = %d",
+                address, pc, size)
         if access == uc.UC_MEM_FETCH_UNMAPPED:
-            print(
-                f"UC_MEM_FETCH_UNMAPPED of 0x{address:x} at 0x{pc:X}, data size = {size}")
+            logging.critical(
+                "UC_MEM_FETCH_UNMAPPED of 0x%x at 0x%X, data size = %d",
+                address, pc, size)
         if access == uc.UC_MEM_WRITE_PROT:
-            print(
-                f"UC_MEM_WRITE_PROT of 0x{address:x} at 0x{pc:X}, data size = {size}")
+            logging.critical(
+                "UC_MEM_WRITE_PROT of 0x%x at 0x%X, data size = %d",
+                address, pc, size)
         if access == uc.UC_MEM_FETCH_PROT:
-            print(
-                f"UC_MEM_FETCH_PROT of 0x{address:x} at 0x{pc:X}, data size = {size}")
+            logging.critical(
+                "UC_MEM_FETCH_PROT of 0x%x at 0x%X, data size = %d",
+                address, pc, size)
         if access == uc.UC_MEM_READ_AFTER:
-            print(
-                f"UC_MEM_READ_AFTER of 0x{address:x} at 0x{pc:X}, data size = {size}")
+            logging.critical(
+                "UC_MEM_READ_AFTER of 0x%x at 0x%X, data size = %d",
+                address, pc, size)
         return False
 
     def _hook_code(self, unicorn, addr, size, user_data):
         mem = unicorn.mem_read(addr, size)
         for insn in self.decomp_engine.disasm(mem, addr):
-            print(f"{hex(insn.address)}\t{insn.mnemonic}\t{insn.op_str}")
+            logging.debug("%#x\t%s\t%s", insn.address, insn.mnemonic, insn.op_str)
         return True

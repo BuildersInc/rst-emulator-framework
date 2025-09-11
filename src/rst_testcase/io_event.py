@@ -34,15 +34,15 @@ class IOEvent:
     def check_precons(self, emulation: UnicornEngine,
                       emulation_start_time: datetime) -> bool | None:
 
-        if datetime.now() - emulation_start_time < self.time_delay:
-            return None
+        # if datetime.now() - emulation_start_time < self.time_delay:
+        #     return None
 
-        all_passed = all([precon._check_precon(emulation) for precon in self._precon])
+        all_passed = all([precon.check_precon(emulation) for precon in self._precon])
 
         if not all_passed:
             return False
 
-        logging.info("%s: All Precons passed", self.event_name)
+        logging.debug("%s: All Precons passed", self.event_name)
         return True
 
     def trigger_input(self, emulation: UnicornEngine):
@@ -60,9 +60,9 @@ class IOEvent:
             emulation (UnicornEngine): emulation Engine with context
 
         Returns:
-            bool: _description_
+            bool: Condition is passed
         """
-        raise NotImplementedError()
+        raise NotImplementedError("You need to implement the necessary condition")
 
     def check_condition(self, emulation: UnicornEngine,
                         emulation_start_time: datetime):

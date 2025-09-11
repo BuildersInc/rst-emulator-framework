@@ -15,7 +15,7 @@ class PreCondition(ABC):
     def check_pre_condition(self, emulation: UnicornEngine) -> bool:
         pass
 
-    def _check_precon(self, emulation: UnicornEngine) -> bool:
+    def check_precon(self, emulation: UnicornEngine) -> bool:
         self.passed = self.check_pre_condition(emulation)
         logging.debug("precon %s, was %s", self.name,
                       "Successful" if self.passed else "Not Successful")

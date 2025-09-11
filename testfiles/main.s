@@ -30,6 +30,7 @@
 .equ ALL_PINS, 0xFF
 .equ white, 0x0E
 .equ Timer, 0xF4240
+; .equ Timer, 0xF
 .equ Leftbit, 0x80000000
 
 // .section .text
@@ -125,7 +126,7 @@ handle_btn_pressed:
     MOV R0, #0x0
     LDR R1, =Timer
     BL endless_loop
-    BL LEDBLUE
+    BL LEDWHITE
     MOV R1, #0x1
     LSR R7, R7, #1
     CMP R1,R7
