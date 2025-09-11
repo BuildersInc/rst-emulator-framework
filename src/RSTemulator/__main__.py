@@ -2,6 +2,7 @@ import logging
 import argparse
 import importlib.util
 import sys
+from pathlib import Path
 
 from unicorn import UcError
 from keystone import KsError
@@ -89,6 +90,7 @@ def main(args):
         # emulator.start_emulation()
         emulator.prepare_emulation()
         emulator.start_emulation_with_test(test_case)
+        test_case.write_testresult_file(Path("result.xml").absolute())
     except KsError as error_msg:
         logging.critical("Assembling failed %s", error_msg)
     except UcError as error_msg:

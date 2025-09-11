@@ -1,11 +1,15 @@
+from pathlib import Path
 import logging
 from typing import List
+
+from junit_xml import TestSuite, TestCase
 
 from rst_testcase.io_event import IOEvent
 
 
 class Testcase:
-    def __init__(self):
+    def __init__(self, test_name: str):
+        self.test_name = test_name
         self.event_list: List[IOEvent] = []
 
     def attach_event(self, event: IOEvent):
@@ -15,6 +19,12 @@ class Testcase:
     def attach_multiple_events(self, event_list: List[IOEvent]):
         for event in event_list:
             self.attach_event(event)
+
+    def write_testresult_file(self, path_to_file: Path):
+        path_to_file.parent.mkdir(parents=True, exist_ok=True)
+        test_cases = [TestCase('Test1', 'some.class.name', 123.345, 'I am stdout!', 'I am stderr!')]
+        ts = TestSuite("my test suite", test_cases)
+        path_to_file.write_text(TestSuite.to_xml_string([ts]))
 
     def all_failed(self) -> bool:
         return all([x.failed for x in self])

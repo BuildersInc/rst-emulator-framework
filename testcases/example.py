@@ -69,7 +69,7 @@ UC Configuration.
 For example the architecture and Mode
 """
 
-TESTCASE = Testcase()
+TESTCASE = Testcase("Example Test")
 """
 Inits a test case
 needs to be populated with events after the initialization
