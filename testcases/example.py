@@ -44,13 +44,21 @@ class BtnPress(IOEvent):
         return emulation.mask_is_set(self.gpio_bank.DATA, self.port)
 
 
-class LEDWhite(IOEvent):
+class LEDWhite(IOEvent, PreCondition):
     """
     Check if LED is White
 
     """
+    def __init__(self, direction, gpio, port, event_name, time_delay):
+        super().__init__(direction, gpio, port, event_name, time_delay)
+        PreCondition.__init__(self, event_name)
+
     def pass_condition(self, emulation: UnicornEngine):
         return emulation.mask_is_set(self.gpio_bank.DATA, LED_WHITE)
+
+    def check_pre_condition(self, emulation):
+        return self.passed
+        # return emulation.mask_is_set(APB_GPIO_PORT_F.DEN, 0x10)
 
 
 TEST_DEPENDENCIES: List[str] = [
@@ -99,6 +107,5 @@ led_event = LEDWhite(
 led_event.add_precondition(RCGC_PORT_F_IS_SET("RCGC Check: LED"))
 led_event.add_precondition(GpioPortFDenLED("DEN Check: LED"))
 led_event.add_precondition(GpioPortFPinIsOutput("LED is Output"))
-
 # TESTCASE.attach_event(btn_press)
 TESTCASE.attach_event(led_event)
