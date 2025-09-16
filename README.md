@@ -1,10 +1,11 @@
-# RST-python-emulator
+# RST Assembly emulation and testing framework
 
-## Install and Launch
+Dieses Emulations- und Test-Framework wurde entwickelt, um von Studierenden erstellten Assembler-Code zu testen.
 
-```sh
-python3 -m venv .env
-source ./.env/bin/activate
-pip install .
-python3 -m RSTemulator -v -asm testfiles/main.s
-```
+Es kann in bestehende CI/CD-Pipelines integriert oder neu erstellt werden, um den Code in einer automatisierten Umgebung zu testen.
+
+Der integrierte Docker-Container ist sofort einsatzbereit.
+
+Dieses Framework basiert auf der [unicorn emulation engine](https://github.com/unicorn-engine/unicorn)
+
+Als Entwickler oder Integrierer schau dir die [DevComments](./docs/dev_doc.md) an.
