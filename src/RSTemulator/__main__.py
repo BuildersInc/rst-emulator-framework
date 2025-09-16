@@ -7,6 +7,7 @@ from pathlib import Path
 from unicorn import UcError
 from keystone import KsError
 
+from rst_testcase.testsuite import Testsuite
 from fileloader import asm
 from emulator import asm_emulator
 from rstutils import rst_utils
@@ -80,7 +81,7 @@ def main(args):
         logging.critical("Missing Testcase")
         sys.exit(1)
 
-    test_case = mod.TESTCASE
+    test_case: Testsuite = mod.TESTCASE
 
     try:
         asm_file = asm.load_file(args.input_file, mod.TEST_UC_CONFIG)
