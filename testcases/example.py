@@ -6,7 +6,7 @@ from config.TM4C123GH6PM import APB_GPIO_PORT_F
 from emulator.unicorn_engine import UnicornEngine
 from rst_testcase.pre_condition import (GPIO_PORT_F_DIR, GPIO_PORT_F_PUR,
                                         RCGC_PORT_F_IS_SET, PreCondition)
-from rst_testcase.testcase import Testcase
+from rst_testcase.testsuite import Testsuite
 from rst_testcase.io_event import Direction, IOEvent
 
 LED_WHITE = 0x02 | 0x04 | 0x08
@@ -60,6 +60,9 @@ class LEDWhite(IOEvent, PreCondition):
         return self.passed
         # return emulation.mask_is_set(APB_GPIO_PORT_F.DEN, 0x10)
 
+    def help_message(self):
+        return "Hallo Welt"
+
 
 TEST_DEPENDENCIES: List[str] = [
 
@@ -77,7 +80,7 @@ UC Configuration.
 For example the architecture and Mode
 """
 
-TESTCASE = Testcase("Example Test")
+TESTCASE = Testsuite("Example Test")
 """
 Inits a test case
 needs to be populated with events after the initialization

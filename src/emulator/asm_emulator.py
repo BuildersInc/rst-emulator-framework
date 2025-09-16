@@ -1,3 +1,4 @@
+from enum import Enum, auto
 import logging
 from datetime import datetime, timedelta
 
@@ -7,7 +8,15 @@ from fileloader.asm import ASMFile
 from config.emulation_config import RSTEmulationConfig
 from emulator.unicorn_engine import UnicornEngine
 
-from rst_testcase.testcase import Testcase
+from rst_testcase.testsuite import Testsuite
+
+
+class EMULATIONSTATUS(Enum):
+    NOT_STARTED = auto()
+    RUNNING = auto()
+    SUCCESS = auto()
+    WATCHDOG_TIMEOUT_REACHED = auto()
+    TESTCASE_FAILURE = auto()
 
 
 class ASMEmulator(UnicornEngine):
@@ -17,6 +26,7 @@ class ASMEmulator(UnicornEngine):
         self.config = config
         self.executed_instruction_count: int = 0
         self.start_time: datetime = None
+        self.status = EMULATIONSTATUS.NOT_STARTED
 
     def prepare_emulation(self) -> None:
         self.emulation_add_hooks()
@@ -40,14 +50,15 @@ class ASMEmulator(UnicornEngine):
                                   count=step_count)
         self.executed_instruction_count += step_count
 
-    def start_emulation_with_test(self, testcase: Testcase):
+    def start_emulation_with_test(self, testcase: Testsuite):
+        self.status = EMULATIONSTATUS.RUNNING
         self.start_time = datetime.now()
-        running = True
         max_time = timedelta(seconds=60)
-        while running:
+
+        while self.status == EMULATIONSTATUS.RUNNING:
             if (datetime.now() - self.start_time) > max_time:
-                running = False
                 logging.critical("Max time reached")
+                self.status = EMULATIONSTATUS.WATCHDOG_TIMEOUT_REACHED
                 break
 
             self.step(self.config.EMULATION_SPEED)
@@ -57,13 +68,19 @@ class ASMEmulator(UnicornEngine):
 
                 if event.is_input():
                     logging.debug("Triggering Input for %s", event.event_name)
-                    event.trigger_input(self)
+                    event.toggle_input(self)
                 result = event.check_condition(self, self.start_time)
 
                 if result:
                     event.passed = True
-            if testcase.all_failed() or testcase.all_passed():
-                running = False
+            if testcase.all_failed():
+                self.status = EMULATIONSTATUS.TESTCASE_FAILURE
+            elif testcase.all_passed():
+                self.status = EMULATIONSTATUS.SUCCESS
+
         for event in testcase:
-            print(f"Done after {(datetime.now() - self.start_time).microseconds}")
+            elapsed = datetime.now() - self.start_time
+            logging.info("Done after %.6f seconds",
+                         elapsed.total_seconds())
+            logging.info("Emulation exit state %s", str(self.status))
             event.print_result()

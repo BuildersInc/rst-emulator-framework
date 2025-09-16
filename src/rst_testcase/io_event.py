@@ -6,19 +6,27 @@ from typing import List
 
 from emulator.unicorn_engine import UnicornEngine
 from rst_testcase.pre_condition import PreCondition
+from rst_testcase.testcase import Testcase
 from config.TM4C123GH6PM import GPIO
 
+
 class Direction(Enum):
+    """
+    An IO Event can either be Input or Output
+
+    """
     INPUT = auto()
     OUTPUT = auto()
 
 
-class IOEvent:
+# Todo This need to inherit from junit_xml.Testcase
+# Todo figure out how the xml fields are populated
+class IOEvent(Testcase):
     def __init__(self, direction: Direction,
                  gpio: GPIO,
                  port: int, event_name: str,
                  time_delay: timedelta) -> None:
-
+        super().__init__(event_name)
         self.direction: Direction = direction
         self.gpio_bank: GPIO = gpio
         self._port: int = 0
@@ -31,27 +39,6 @@ class IOEvent:
         self._precon: List[PreCondition] = []
         self.event_name = f"EVENT:{event_name}"
 
-    def check_precons(self, emulation: UnicornEngine,
-                      emulation_start_time: datetime) -> bool | None:
-
-        # if datetime.now() - emulation_start_time < self.time_delay:
-        #     return None
-
-        all_passed = all([precon.check_precon(emulation) for precon in self._precon])
-
-        if not all_passed:
-            return False
-
-        logging.debug("%s: All Precons passed", self.event_name)
-        return True
-
-    def trigger_input(self, emulation: UnicornEngine):
-
-        if not self._is_pressed:
-            self._set_input(emulation)
-        else:
-            self._release_input(emulation)
-
     def pass_condition(self, emulation: UnicornEngine) -> bool:
         """
         Implement a check that checks the emulation / register state
@@ -63,6 +50,31 @@ class IOEvent:
             bool: Condition is passed
         """
         raise NotImplementedError("You need to implement the necessary condition")
+
+    def help_message(self) -> str:
+        # Todo Maybe there is a better way than with a method
+        return "default help message"
+
+    def check_precons(self, emulation: UnicornEngine,
+                      emulation_start_time: datetime) -> bool | None:
+
+        if datetime.now() - emulation_start_time < self.time_delay:
+            return None
+
+        all_passed = all([precon.check_precon(emulation) for precon in self._precon])
+
+        if not all_passed:
+            return False
+
+        logging.debug("%s: All Precons passed", self.event_name)
+        return True
+
+    def toggle_input(self, emulation: UnicornEngine):
+
+        if not self._is_pressed:
+            self._set_input(emulation)
+        else:
+            self._release_input(emulation)
 
     def check_condition(self, emulation: UnicornEngine,
                         emulation_start_time: datetime):
@@ -81,16 +93,18 @@ class IOEvent:
         if self._tries == 30:
             logging.debug("Event %s was Failed", self.event_name)
             self.failed = True
+            self.testcase.add_failure_info(self.message_fail(), self.hint(1))
             return
 
         logging.debug("Event %s was successfull", self.event_name)
+        # self.testcase.add_failure_info(self.message_fail())
         self.passed = True
 
     def print_result(self):
         if self.failed or not self.passed:
-            print("Test Failed")
+            logging.info(self.message_fail())
         else:
-            print("Test was successfull")
+            logging.info(self.message_success())
 
     def add_precondition(self, precon: PreCondition):
         self._precon.append(precon)

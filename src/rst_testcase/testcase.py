@@ -1,36 +1,25 @@
-from pathlib import Path
-import logging
-from typing import List
-
-from junit_xml import TestSuite, TestCase
-
-from rst_testcase.io_event import IOEvent
+from junit_xml import TestCase
 
 
 class Testcase:
-    def __init__(self, test_name: str):
-        self.test_name = test_name
-        self.event_list: List[IOEvent] = []
+    def __init__(self, name: str):
+        self.test_name = name
+        self.testcase = TestCase(self.test_name)
 
-    def attach_event(self, event: IOEvent):
-        logging.debug("Attach event %s", event.event_name)
-        self.event_list.append(event)
+    def message_success(self, reason: str | None = None) -> str:
+        return f"Test passed {reason if reason is not None else ""}"
 
-    def attach_multiple_events(self, event_list: List[IOEvent]):
-        for event in event_list:
-            self.attach_event(event)
+    def message_fail(self, reason: str | None = None) -> str:
+        return f"Test Failed {reason if reason is not None else ""}"
 
-    def write_testresult_file(self, path_to_file: Path):
-        path_to_file.parent.mkdir(parents=True, exist_ok=True)
-        test_cases = [TestCase('Test1', 'some.class.name', 123.345, 'I am stdout!', 'I am stderr!')]
-        ts = TestSuite("my test suite", test_cases)
-        path_to_file.write_text(TestSuite.to_xml_string([ts]))
+    def message_skip(self, reason: str | None = None) -> str:
+        return f"Test skipped {reason if reason is not None else ""}"
 
-    def all_failed(self) -> bool:
-        return all([x.failed for x in self])
-
-    def all_passed(self) -> bool:
-        return all([x.passed for x in self])
-
-    def __iter__(self):
-        return iter(self.event_list)
+    def hint(self, hint_level) -> str:
+        if hint_level == 1:
+            return "Hint 1"
+        if hint_level == 2:
+            return "Hint 2"
+        if hint_level == 3:
+            return "Hint 3"
+        return "Hint 4"
