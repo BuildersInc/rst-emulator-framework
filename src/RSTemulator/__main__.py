@@ -37,6 +37,9 @@ def get_parser():
                             help="Provide input assembly file")
     new_parser.add_argument("--test-file", required=True, dest="testcase_file",
                             help="The configured testcase")
+    new_parser.add_argument("--junitxml", required=False, dest="junit_xml_path",
+                            default="result.xml",
+                            help="Path for the result xml")
     return new_parser
 
 
@@ -91,7 +94,7 @@ def main(args):
         # emulator.start_emulation()
         emulator.prepare_emulation()
         emulator.start_emulation_with_test(test_case)
-        test_case.write_testresult_file(Path("result.xml").absolute())
+        test_case.write_testresult_file(Path(args.junit_xml_path).absolute())
     except KsError as error_msg:
         logging.critical("Assembling failed %s", error_msg)
     except UcError as error_msg:

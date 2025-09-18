@@ -24,7 +24,7 @@ class Testsuite:
         path_to_file.parent.mkdir(parents=True, exist_ok=True)
         test_cases = [x.testcase for x in self.event_list]
         # test_cases = [TestCase('Test1', 'some.class.name', 123.345, 'I am stdout!', 'I am stderr!')]
-        ts = TestSuite("my test suite", test_cases)
+        ts = TestSuite(self.test_name, test_cases)
         with path_to_file.open("w", encoding="utf-8") as file:
             to_xml_report_file(file, [ts])
         # path_to_file.write_text(TestSuite.to_xml_report_string())
