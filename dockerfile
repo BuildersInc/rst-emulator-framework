@@ -1,16 +1,9 @@
-FROM ubuntu:24.04
+FROM python:3.12-slim
 
-ARG DEBIAN_FRONTEND=noninteractive
-
-RUN apt-get update
-
-RUN apt install -y python3 python3-full python3-pip
+WORKDIR /app
 
 COPY setup.cfg pyproject.toml README.md LICENSE /app/
 COPY src/ /app/src/
-WORKDIR /app
 
-RUN python3 -m venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
+RUN pip install --no-cache-dir .
 
-RUN pip install .
