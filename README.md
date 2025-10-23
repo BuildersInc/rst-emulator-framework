@@ -1,9 +1,9 @@
-# RST Assembly emulation and testing framework
+# RST Assembly Emulation and Testing Framework
 
-Dieses Emulations- und Test-Framework wurde entwickelt, um von Studierenden erstellten Assembler-Code zu testen.
+This emulation and testing framework has been developed to test assembler code created by students.
 
-Es kann in bestehende CI/CD-Pipelines integriert oder neu erstellt werden, um den Code in einer automatisierten Umgebung zu testen.
+It can be integrated into existing CI/CD pipelines or set up from scratch to test code in an automated environment.
 
-Der integrierte Docker-Container ist sofort einsatzbereit.
+The built-in Docker container is ready to use immediately.
 
-Dieses Framework basiert auf der [unicorn emulation engine](https://github.com/unicorn-engine/unicorn)
+This framework is based on the [Unicorn emulation engine](https://github.com/unicorn-engine/unicorn).
