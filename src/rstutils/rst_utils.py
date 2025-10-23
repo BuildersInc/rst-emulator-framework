@@ -28,5 +28,5 @@ def absolute_path(path_to_file: str) -> Path:
 
     if not path.exists():
         logging.critical("File %s not Found", path)
-        return FileNotFoundError(path.as_posix())
+        raise FileNotFoundError(path.as_posix())
     return path
